@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KDP Intelligence Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; padding: 20px; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; padding-bottom: 20px; border-bottom: 1px solid #1e293b; }
+    h1 { font-size: 1.5rem; color: #f8fafc; }
+    .status-badge { padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; }
+    .status-ok { background: #064e3b; color: #34d399; }
+    .status-waiting { background: #1e293b; color: #94a3b8; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 32px; }
+    .card { background: #1e293b; border-radius: 12px; padding: 20px; border: 1px solid #334155; }
+    .idea-card { background: #1e293b; border-radius: 12px; padding: 24px; border: 1px solid #334155; margin-bottom: 16px; cursor: pointer; transition: border-color 0.2s; }
+    .idea-card:hover { border-color: #3b82f6; }
+    .idea-card.expanded .brief-full { display: block; }
+    .brief-full { display: none; margin-top: 20px; padding-top: 20px; border-top: 1px solid #334155; }
+    .score-bar { height: 6px; background: #334155; border-radius: 3px; margin-top: 8px; }
+    .score-fill { height: 100%; border-radius: 3px; }
+    .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; margin-right: 6px; }
+    .badge-pseudonym { background: #1e3a5f; color: #60a5fa; }
+    .badge-score { background: #2d1b69; color: #a78bfa; }
+    .badge-pending { background: #1c2a1e; color: #4ade80; }
+    .badge-approved { background: #1e3a5f; color: #60a5fa; }
+    .badge-writing { background: #2d1b69; color: #c084fc; }
+    .badge-published { background: #052e16; color: #34d399; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    th { text-align: left; padding: 10px 12px; color: #64748b; font-size: 0.75rem; text-transform: uppercase; border-bottom: 1px solid #334155; }
+    td { padding: 12px; border-bottom: 1px solid #1e293b; }
+    tr:hover td { background: #1e293b; }
+    .section-title { font-size: 1.1rem; font-weight: 600; color: #f8fafc; margin-bottom: 16px; margin-top: 32px; }
+    .kpi-value { font-size: 2rem; font-weight: 700; color: #f8fafc; }
+    .kpi-label { font-size: 0.85rem; color: #64748b; margin-top: 4px; }
+    .empty-state { text-align: center; padding: 40px; color: #475569; }
+    select { background: #334155; color: #e2e8f0; border: none; padding: 4px 8px; border-radius: 6px; font-size: 0.85rem; cursor: pointer; }
+    .loading { text-align: center; padding: 40px; color: #64748b; }
+  </style>
+</head>
+<body>
+<div class="header">
+  <div><h1>KDP Intelligence</h1><div id="last-analysis" style="color:#64748b;font-size:0.85rem;margin-top:4px;">Cargando...</div></div>
+  <span class="status-badge status-waiting" id="status-badge">Cargando</span>
+</div>
+<div class="grid" id="kpis"><div class="card"><div class="loading">Cargando...</div></div></div>
+<div class="section-title">Ideas del dia</div>
+<div id="ideas-container"><div class="loading">Cargando...</div></div>
+<div class="section-title">Nichos monitorizados</div>
+<div class="card"><table><thead><tr><th>Nicho</th><th>Categoria</th><th>Score</th><th>BSR</th><th>Detectado</th><th>Gap .com</th></tr></thead><tbody id="niches-table"><tr><td colspan="6" class="loading">Cargando...</td></tr></tbody></table></div>
+<div class="section-title">Historico ideas (30 dias)</div>
+<div class="card"><table><thead><tr><th>Fecha</th><th>Titulo</th><th>Pseudonimo</th><th>Score</th><th>Estado</th><th>Accion</th></tr></thead><tbody id="history-table"><tr><td colspan="6" class="loading">Cargando...</td></tr></tbody></table></div>
+<div class="section-title">Evolucion scores</div>
+<div class="card"><canvas id="nichesChart" height="100"></canvas></div>
+<script>
+const SB='https://dgqpeplvyjxkqnjmcevc.supabase.co',K='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRncXBlcGx2eWp4a3Fuam1jZXZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0NDk0NTEsImV4cCI6MjA5MDAyNTQ1MX0.KvEaa-M8Wt6cXIwqnL6xX1Ff5xgXU2uMxVBbrwNb_O0',H={apikey:K,Authorization:'Bearer '+K};
+async function q(t,p=''){return(await fetch(SB+'/rest/v1/'+t+p,{headers:H})).json();}
+async function upd(id,s){await fetch(SB+'/rest/v1/book_ideas?id=eq.'+id,{method:'PATCH',headers:{...H,'Content-Type':'application/json'},body:JSON.stringify({status:s})});}
+const sc=s=>s>=75?'#34d399':s>=60?'#fbbf24':'#f87171';
+const sb=s=>({pending:'Pendiente',approved:'Aprobada',writing:'Escribiendo',published:'Publicada',discarded:'Descartada'}[s]||s);
+async function load(){
+  const an=await q('daily_analysis','?order=analysis_date.desc&limit=1');
+  if(!an.length){document.getElementById('kpis').innerHTML='<div class="empty-state">Sin datos aun. El sistema corre L/M/V a las 6 AM.</div>';document.getElementById('ideas-container').innerHTML='';return;}
+  const last=an[0],today=new Date().toISOString().split('T')[0];
+  document.getElementById('last-analysis').textContent='Ultimo: '+last.analysis_date+' - '+(last.books_scanned||0)+' libros';
+  const b=document.getElementById('status-badge');b.textContent=last.analysis_date===today?'Actualizado hoy':last.analysis_date;b.className='status-badge '+(last.analysis_date===today?'status-ok':'status-waiting');
+  const[ai,ni]=await Promise.all([q('book_ideas','?order=created_at.desc'),q('niches','?order=score.desc')]);
+  const ti=ai.filter(i=>i.created_at?.startsWith(today)),pi=ai.filter(i=>i.status==='pending');
+  document.getElementById('kpis').innerHTML='<div class="card"><div class="kpi-value">'+ti.length+'</div><div class="kpi-label">Ideas hoy</div></div><div class="card"><div class="kpi-value">'+pi.length+'</div><div class="kpi-label">Pendientes</div></div><div class="card"><div class="kpi-value">'+ni.filter(n=>n.score>=65).length+'</div><div class="kpi-label">Nichos score>=65</div></div><div class="card"><div class="kpi-value">'+(last.execution_time_minutes||'?')+' min</div><div class="kpi-label">Duracion</div></div>';
+  document.getElementById('ideas-container').innerHTML=ti.length?ti.map(i=>'<div class="idea-card" onclick="this.classList.toggle('expanded')"><strong style="font-size:1.1rem;color:#f8fafc">'+i.title_suggestion+'</strong><br><span style="color:#94a3b8;font-size:0.9rem">'+(i.subtitle_suggestion||'')+'</span><br><span class="badge badge-pseudonym">'+(i.pseudonym_assigned||'?')+'</span><span class="badge badge-score">Score '+i.score+'</span><span class="badge">'+(sb(i.status))+'</span><div class="score-bar"><div class="score-fill" style="width:'+i.score+'%;background:'+sc(i.score)+'"></div></div><div class="brief-full"><p style="margin:8px 0;color:#94a3b8">'+(i.main_promise||'')+'</p><p style="margin:8px 0;color:#94a3b8">Lector: '+(i.target_reader||'')+'</p><p style="margin:8px 0;color:#94a3b8">Diferenciador: '+(i.differentiator||'')+'</p><select onchange="upd(''+i.id+'',this.value);location.reload()"><option value="pending" '+(i.status==='pending'?'selected':'')+'>Pendiente</option><option value="approved" '+(i.status==='approved'?'selected':'')+'>Aprobada</option><option value="writing" '+(i.status==='writing'?'selected':'')+'>Escribiendo</option><option value="published" '+(i.status==='published'?'selected':'')+'>Publicada</option><option value="discarded" '+(i.status==='discarded'?'selected':'')+'>Descartada</option></select></div></div>').join(''):'<div class="empty-state">Sin ideas hoy.</div>';
+  document.getElementById('niches-table').innerHTML=ni.filter(n=>n.score>=50).map(n=>'<tr><td>'+n.name+'</td><td style="color:#94a3b8">'+(n.category||'-')+'</td><td style="color:'+sc(n.score)+'">'+n.score+'</td><td>'+(n.avg_bsr?.toLocaleString()||'-')+'</td><td style="color:#64748b">'+(n.first_detected||'-')+'</td><td>'+(n.is_gap_from_com?'Si':'-')+'</td></tr>').join('')||'<tr><td colspan="6" class="empty-state">Sin nichos</td></tr>';
+  const ago=new Date(Date.now()-30*864e5).toISOString(),rec=await q('book_ideas','?created_at=gte.'+ago+'&order=created_at.desc');
+  document.getElementById('history-table').innerHTML=rec.map(i=>'<tr><td style="color:#64748b">'+(i.created_at?.split('T')[0])+'</td><td>'+i.title_suggestion+'</td><td><span class="badge badge-pseudonym">'+(i.pseudonym_assigned||'-')+'</span></td><td style="color:'+sc(i.score)+'">'+i.score+'</td><td>'+sb(i.status)+'</td><td><select onchange="upd(''+i.id+'',this.value);location.reload()"><option>Pendiente</option><option>Aprobada</option><option>Escribiendo</option><option>Publicada</option><option>Descartada</option></select></td></tr>').join('')||'<tr><td colspan="6" class="empty-state">Sin ideas recientes</td></tr>';
+  const top=ni.slice(0,5),h=await q('niche_history','?order=recorded_date.asc&limit=200'),lbs=[...new Set(h.map(x=>x.recorded_date))].slice(-4);
+  lbs.length?new Chart(document.getElementById('nichesChart'),{type:'line',data:{labels:lbs,datasets:top.map((n,i)=>{const c=['#3b82f6','#8b5cf6','#34d399','#fbbf24','#f87171'][i];return{label:n.name,data:lbs.map(d=>(h.find(x=>x.niche_id===n.id&&x.recorded_date===d)||{}).score||null),borderColor:c,backgroundColor:c+'20',tension:0.3,fill:true,spanGaps:true};})},options:{plugins:{legend:{labels:{color:'#94a3b8'}}},scales:{x:{ticks:{color:'#64748b'},grid:{color:'#1e293b'}},y:{min:0,max:100,ticks:{color:'#64748b'},grid:{color:'#1e293b'}}}}}):document.getElementById('nichesChart').parentElement.innerHTML='<div class="empty-state">El grafico estara disponible con mas datos.</div>';
+}
+load().catch(console.error);
+</script>
+</body>
+</html>
