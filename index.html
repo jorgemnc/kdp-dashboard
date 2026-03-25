@@ -8,227 +8,307 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; }
-    #login-screen { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
-    .login-box { background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 40px; width: 100%; max-width: 400px; }
-    .login-logo { font-size: 2rem; margin-bottom: 8px; }
-    .login-title { font-size: 1.4rem; font-weight: 700; color: #f8fafc; margin-bottom: 4px; }
-    .login-subtitle { color: #64748b; font-size: 0.9rem; margin-bottom: 32px; }
-    .form-group { margin-bottom: 16px; }
-    .form-group label { display: block; font-size: 0.85rem; color: #94a3b8; margin-bottom: 6px; }
-    .form-group input { width: 100%; padding: 12px 14px; background: #0f172a; border: 1px solid #334155; border-radius: 8px; color: #f8fafc; font-size: 0.95rem; outline: none; transition: border-color 0.2s; }
-    .form-group input:focus { border-color: #3b82f6; }
-    .btn-login { width: 100%; padding: 12px; background: #3b82f6; color: white; border: none; border-radius: 8px; font-size: 0.95rem; font-weight: 600; cursor: pointer; margin-top: 8px; transition: background 0.2s; }
-    .btn-login:hover { background: #2563eb; }
-    .btn-login:disabled { background: #1e3a5f; color: #64748b; cursor: not-allowed; }
-    .login-error { color: #f87171; font-size: 0.85rem; margin-top: 12px; padding: 10px; background: #1c0a0a; border-radius: 6px; display: none; }
-    #dashboard { display: none; padding: 20px; }
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; padding-bottom: 20px; border-bottom: 1px solid #1e293b; }
-    .header-left h1 { font-size: 1.5rem; color: #f8fafc; }
-    .header-left .sub { color: #64748b; font-size: 0.85rem; margin-top: 4px; }
-    .header-right { display: flex; align-items: center; gap: 12px; }
-    .status-badge { padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; }
-    .status-ok { background: #064e3b; color: #34d399; }
-    .status-waiting { background: #1e293b; color: #94a3b8; }
-    .btn-logout { padding: 6px 14px; background: transparent; border: 1px solid #334155; border-radius: 8px; color: #94a3b8; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; }
-    .btn-logout:hover { border-color: #f87171; color: #f87171; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 32px; }
-    .card { background: #1e293b; border-radius: 12px; padding: 20px; border: 1px solid #334155; }
-    .kpi-value { font-size: 2rem; font-weight: 700; color: #f8fafc; }
-    .kpi-label { font-size: 0.85rem; color: #64748b; margin-top: 4px; }
-    .idea-card { background: #1e293b; border-radius: 12px; padding: 24px; border: 1px solid #334155; margin-bottom: 16px; cursor: pointer; transition: border-color 0.2s; }
-    .idea-card:hover { border-color: #3b82f6; }
-    .idea-card.expanded .brief-full { display: block; }
-    .brief-full { display: none; margin-top: 20px; padding-top: 20px; border-top: 1px solid #334155; }
-    .score-bar { height: 6px; background: #334155; border-radius: 3px; margin-top: 10px; }
-    .score-fill { height: 100%; border-radius: 3px; }
-    .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; margin-right: 6px; margin-top: 6px; }
-    .badge-pseudo { background: #1e3a5f; color: #60a5fa; }
-    .badge-score { background: #2d1b69; color: #a78bfa; }
-    .badge-pending { background: #1c2a1e; color: #4ade80; }
-    .badge-approved { background: #1e3a5f; color: #60a5fa; }
-    .badge-writing { background: #2d1b69; color: #c084fc; }
-    .badge-published { background: #052e16; color: #34d399; }
-    .badge-discarded { background: #1c1c1c; color: #64748b; }
-    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-    th { text-align: left; padding: 10px 12px; color: #64748b; font-size: 0.75rem; text-transform: uppercase; border-bottom: 1px solid #334155; }
-    td { padding: 12px; border-bottom: 1px solid #1e293b; }
-    tr:hover td { background: #243046; }
-    .section-title { font-size: 1.1rem; font-weight: 600; color: #f8fafc; margin-bottom: 16px; margin-top: 32px; }
-    .empty-state { text-align: center; padding: 48px; color: #475569; font-size: 0.95rem; }
-    select { background: #334155; color: #e2e8f0; border: none; padding: 4px 8px; border-radius: 6px; font-size: 0.85rem; cursor: pointer; }
-    .loading { text-align: center; padding: 40px; color: #64748b; }
-    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
-    .detail-item label { color: #64748b; font-size: 0.75rem; text-transform: uppercase; display: block; margin-bottom: 4px; }
-    .detail-item p { font-size: 0.9rem; color: #cbd5e1; }
-    .chapter-list { list-style: none; margin-top: 4px; }
-    .chapter-list li { padding: 5px 0; border-bottom: 1px solid #334155; font-size: 0.9rem; color: #cbd5e1; }
-    .chapter-list li:last-child { border-bottom: none; }
-    .ch-num { color: #3b82f6; font-weight: 600; margin-right: 6px; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #0f1117; color: #e2e8f0; min-height: 100vh; }
+
+    /* LOGIN */
+    #login-screen {
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh; background: linear-gradient(135deg, #0f1117 0%, #1a1f2e 100%);
+    }
+    .login-box {
+      background: #1e2330; border: 1px solid #2d3348; border-radius: 16px;
+      padding: 48px 40px; width: 380px; text-align: center;
+    }
+    .login-box h1 { font-size: 24px; font-weight: 700; color: #fff; margin-bottom: 8px; }
+    .login-box p { color: #64748b; font-size: 14px; margin-bottom: 32px; }
+    .login-box input {
+      width: 100%; padding: 12px 16px; border-radius: 8px;
+      border: 1px solid #2d3348; background: #0f1117; color: #e2e8f0;
+      font-size: 14px; margin-bottom: 12px; outline: none;
+    }
+    .login-box input:focus { border-color: #6366f1; }
+    #btn-login {
+      width: 100%; padding: 12px; border-radius: 8px; border: none;
+      background: #6366f1; color: #fff; font-size: 15px; font-weight: 600;
+      cursor: pointer; margin-top: 4px; transition: background 0.2s;
+    }
+    #btn-login:hover { background: #4f46e5; }
+    #login-error { color: #f87171; font-size: 13px; margin-top: 12px; min-height: 18px; }
+
+    /* DASHBOARD */
+    #dashboard { display: none; }
+    .topbar {
+      background: #1e2330; border-bottom: 1px solid #2d3348;
+      padding: 16px 32px; display: flex; align-items: center; justify-content: space-between;
+    }
+    .topbar h1 { font-size: 18px; font-weight: 700; color: #fff; }
+    .topbar span { font-size: 13px; color: #64748b; }
+    #btn-logout {
+      background: transparent; border: 1px solid #2d3348; color: #94a3b8;
+      padding: 6px 14px; border-radius: 6px; font-size: 13px; cursor: pointer;
+    }
+    #btn-logout:hover { border-color: #f87171; color: #f87171; }
+    .main { padding: 32px; max-width: 1400px; margin: 0 auto; }
+
+    /* STATS */
+    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+    .stat-card {
+      background: #1e2330; border: 1px solid #2d3348; border-radius: 12px; padding: 20px;
+    }
+    .stat-card .label { font-size: 12px; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; }
+    .stat-card .value { font-size: 32px; font-weight: 700; color: #fff; margin-top: 4px; }
+    .stat-card .sub { font-size: 12px; color: #4ade80; margin-top: 2px; }
+
+    /* SECTIONS */
+    .section { margin-bottom: 40px; }
+    .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .section-header h2 { font-size: 16px; font-weight: 600; color: #fff; }
+    .badge { background: #6366f1; color: #fff; border-radius: 20px; padding: 2px 10px; font-size: 12px; }
+
+    /* TABLE */
+    table { width: 100%; border-collapse: collapse; }
+    th { text-align: left; padding: 10px 14px; font-size: 12px; color: #64748b; text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid #2d3348; }
+    td { padding: 12px 14px; font-size: 14px; border-bottom: 1px solid #1a1f2e; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #252b3b; }
+    .table-wrap { background: #1e2330; border: 1px solid #2d3348; border-radius: 12px; overflow: hidden; }
+
+    /* SCORE BADGE */
+    .score { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 13px; font-weight: 600; }
+    .score-high { background: #14532d; color: #4ade80; }
+    .score-mid { background: #713f12; color: #fbbf24; }
+    .score-low { background: #450a0a; color: #f87171; }
+
+    /* IDEA CARDS */
+    .ideas-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 16px; }
+    .idea-card {
+      background: #1e2330; border: 1px solid #2d3348; border-radius: 12px;
+      padding: 20px; cursor: pointer; transition: border-color 0.2s;
+    }
+    .idea-card:hover { border-color: #6366f1; }
+    .idea-card.expanded .card-detail { display: block; }
+    .card-title { font-size: 15px; font-weight: 600; color: #fff; margin-bottom: 4px; }
+    .card-meta { font-size: 13px; color: #64748b; }
+    .card-scores { display: flex; gap: 8px; margin: 12px 0; flex-wrap: wrap; }
+    .card-detail { display: none; margin-top: 14px; border-top: 1px solid #2d3348; padding-top: 14px; }
+    .card-detail p { font-size: 13px; color: #94a3b8; line-height: 1.6; margin-bottom: 8px; }
+    .card-detail strong { color: #e2e8f0; }
+
+    /* STATUS SELECT */
+    .status-select {
+      background: #0f1117; border: 1px solid #2d3348; color: #e2e8f0;
+      border-radius: 6px; padding: 4px 8px; font-size: 13px; cursor: pointer;
+    }
+
+    /* CHART */
+    .chart-wrap { background: #1e2330; border: 1px solid #2d3348; border-radius: 12px; padding: 24px; }
+    canvas { max-height: 260px; }
+
+    /* LOADING */
+    .loading { color: #64748b; font-size: 14px; padding: 24px; text-align: center; }
   </style>
 </head>
 <body>
 
+<!-- LOGIN -->
 <div id="login-screen">
   <div class="login-box">
-    <div class="login-logo">📚</div>
-    <div class="login-title">KDP Intelligence</div>
-    <div class="login-subtitle">Sistema de inteligencia editorial</div>
-    <div class="form-group">
-      <label>Email</label>
-      <input type="email" id="login-email" placeholder="tu@email.com" autocomplete="email">
-    </div>
-    <div class="form-group">
-      <label>Contrasena</label>
-      <input type="password" id="login-password" placeholder="password" autocomplete="current-password">
-    </div>
-    <button class="btn-login" id="btn-login" onclick="doLogin()">Entrar</button>
-    <div class="login-error" id="login-error"></div>
+    <h1>📚 KDP Intelligence</h1>
+    <p>Accede a tu panel editorial</p>
+    <input type="email" id="inp-email" placeholder="correo@ejemplo.com" autocomplete="email">
+    <input type="password" id="inp-pass" placeholder="Contraseña" autocomplete="current-password">
+    <button id="btn-login">Entrar</button>
+    <div id="login-error"></div>
   </div>
 </div>
 
+<!-- DASHBOARD -->
 <div id="dashboard">
-  <div class="header">
-    <div class="header-left">
-      <h1>KDP Intelligence</h1>
-      <div class="sub" id="last-analysis">Cargando datos...</div>
+  <div class="topbar">
+    <h1>📚 KDP Intelligence</h1>
+    <span id="user-email"></span>
+    <button id="btn-logout">Cerrar sesión</button>
+  </div>
+  <div class="main">
+    <div class="stats-grid">
+      <div class="stat-card"><div class="label">Análisis totales</div><div class="value" id="stat-analisis">—</div><div class="sub">sesiones registradas</div></div>
+      <div class="stat-card"><div class="label">Nichos detectados</div><div class="value" id="stat-nichos">—</div><div class="sub">evaluados en total</div></div>
+      <div class="stat-card"><div class="label">Ideas generadas</div><div class="value" id="stat-ideas">—</div><div class="sub">score ≥ 65</div></div>
+      <div class="stat-card"><div class="label">Libros escaneados</div><div class="value" id="stat-libros">—</div><div class="sub">en Amazon.es</div></div>
     </div>
-    <div class="header-right">
-      <span class="status-badge status-waiting" id="status-badge">Cargando</span>
-      <button class="btn-logout" onclick="doLogout()">Cerrar sesion</button>
+    <div class="section">
+      <div class="section-header"><h2>💡 Ideas de Libros</h2><span class="badge" id="badge-ideas">0</span></div>
+      <div class="ideas-grid" id="ideas-container"><div class="loading">Cargando ideas…</div></div>
+    </div>
+    <div class="section">
+      <div class="section-header"><h2>🔍 Nichos Evaluados</h2><span class="badge" id="badge-nichos">0</span></div>
+      <div class="table-wrap"><table><thead><tr><th>Nicho</th><th>Categoría</th><th>Score</th><th>BSR Medio</th><th>Competidores</th><th>Brecha .com</th><th>Fecha</th></tr></thead><tbody id="nichos-body"><tr><td colspan="7" class="loading">Cargando nichos…</td></tr></tbody></table></div>
+    </div>
+    <div class="section">
+      <div class="section-header"><h2>📅 Historial de Análisis</h2><span class="badge" id="badge-historial">0</span></div>
+      <div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Categorías</th><th>Libros</th><th>Nichos</th><th>Ideas</th><th>Duración</th><th>Notas</th></tr></thead><tbody id="historial-body"><tr><td colspan="7" class="loading">Cargando historial…</td></tr></tbody></table></div>
+    </div>
+    <div class="section">
+      <div class="section-header"><h2>📈 Tendencia de Scores</h2></div>
+      <div class="chart-wrap"><canvas id="score-chart"></canvas></div>
     </div>
   </div>
-  <div class="grid" id="kpis"><div class="card"><div class="loading">Cargando...</div></div></div>
-  <div class="section-title">Ideas del dia</div>
-  <div id="ideas-container"><div class="loading">Cargando ideas...</div></div>
-  <div class="section-title">Nichos monitorizados</div>
-  <div class="card">
-    <table><thead><tr><th>Nicho</th><th>Categoria</th><th>Score</th><th>BSR Promedio</th><th>Detectado</th><th>Gap .com</th></tr></thead>
-    <tbody id="niches-table"><tr><td colspan="6" class="loading">Cargando...</td></tr></tbody></table>
-  </div>
-  <div class="section-title">Historico (30 dias)</div>
-  <div class="card">
-    <table><thead><tr><th>Fecha</th><th>Titulo</th><th>Pseudonimo</th><th>Score</th><th>Estado</th><th>Accion</th></tr></thead>
-    <tbody id="history-table"><tr><td colspan="6" class="loading">Cargando...</td></tr></tbody></table>
-  </div>
-  <div class="section-title">Evolucion de scores</div>
-  <div class="card"><canvas id="nichesChart" height="100"></canvas></div>
 </div>
 
 <script>
-const SB_URL='https://dgqpeplvyjxkqnjmcevc.supabase.co';
-const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRncXBlcGx2eWp4a3Fuam1jZXZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0NDk0NTEsImV4cCI6MjA5MDAyNTQ1MX0.KvEaa-M8Wt6cXIwqnL6xX1Ff5xgXU2uMxVBbrwNb_O0';
-const sb=supabase.createClient(SB_URL,SB_KEY);
+var SB_URL = "https://dgqpeplvyjxkqnjmcevc.supabase.co";
+var SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRncXBlcGx2eWp4a3Fuam1jZXZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0NDk0NTEsImV4cCI6MjA5MDAyNTQ1MX0.KvEaa-M8Wt6cXIwqnL6xX1Ff5xgXU2uMxVBrrwNb_O0";
+var sb = supabase.createClient(SB_URL, SB_KEY);
+var scoreChart = null;
 
-async function doLogin(){
-  const email=document.getElementById('login-email').value.trim();
-  const pass=document.getElementById('login-password').value;
-  const btn=document.getElementById('btn-login');
-  const errEl=document.getElementById('login-error');
-  btn.disabled=true; btn.textContent='Entrando...'; errEl.style.display='none';
-  const{error}=await sb.auth.signInWithPassword({email,password:pass});
-  if(error){
-    errEl.textContent=error.message==='Invalid login credentials'?'Email o contrasena incorrectos.':error.message;
-    errEl.style.display='block'; btn.disabled=false; btn.textContent='Entrar';
-  } else { showDashboard(); }
-}
+document.getElementById("btn-login").addEventListener("click", doLogin);
+document.getElementById("btn-logout").addEventListener("click", doLogout);
+document.getElementById("inp-pass").addEventListener("keydown", function(e) { if (e.key === "Enter") doLogin(); });
+document.getElementById("inp-email").addEventListener("keydown", function(e) { if (e.key === "Enter") document.getElementById("inp-pass").focus(); });
 
-async function doLogout(){
-  await sb.auth.signOut();
-  document.getElementById('dashboard').style.display='none';
-  document.getElementById('login-screen').style.display='flex';
-  document.getElementById('login-password').value='';
-}
-
-document.addEventListener('DOMContentLoaded',()=>{
-  document.getElementById('login-password').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
-  document.getElementById('login-email').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('login-password').focus();});
-  sb.auth.getSession().then(({data:{session}})=>{if(session)showDashboard();});
+sb.auth.getSession().then(function(result) {
+  if (result.data && result.data.session) showDashboard(result.data.session.user.email);
+});
+sb.auth.onAuthStateChange(function(event, session) {
+  if (event === "SIGNED_IN" && session) showDashboard(session.user.email);
+  else if (event === "SIGNED_OUT") { document.getElementById("dashboard").style.display = "none"; document.getElementById("login-screen").style.display = "flex"; }
 });
 
-function showDashboard(){
-  document.getElementById('login-screen').style.display='none';
-  document.getElementById('dashboard').style.display='block';
+async function doLogin() {
+  var email = document.getElementById("inp-email").value.trim();
+  var pass = document.getElementById("inp-pass").value;
+  var errEl = document.getElementById("login-error");
+  errEl.textContent = "";
+  if (!email || !pass) { errEl.textContent = "Ingresa correo y contraseña."; return; }
+  document.getElementById("btn-login").textContent = "Entrando…";
+  var res = await sb.auth.signInWithPassword({ email: email, password: pass });
+  document.getElementById("btn-login").textContent = "Entrar";
+  if (res.error) errEl.textContent = "Credenciales incorrectas. Inténtalo de nuevo.";
+  else showDashboard(res.data.user.email);
+}
+async function doLogout() { await sb.auth.signOut(); }
+function showDashboard(email) {
+  document.getElementById("login-screen").style.display = "none";
+  document.getElementById("dashboard").style.display = "block";
+  document.getElementById("user-email").textContent = email || "";
   loadDashboard();
 }
-
-async function qAuth(table,params=''){
-  const{data:{session}}=await sb.auth.getSession();
-  const token=session?.access_token||SB_KEY;
-  const r=await fetch(SB_URL+'/rest/v1/'+table+params,{headers:{apikey:SB_KEY,Authorization:'Bearer '+token,'Content-Type':'application/json'}});
-  return r.json();
+async function getToken() {
+  var s = await sb.auth.getSession();
+  return (s.data && s.data.session) ? s.data.session.access_token : SB_KEY;
 }
-
-async function updateStatus(ideaId,newStatus){
-  const{data:{session}}=await sb.auth.getSession();
-  const token=session?.access_token||SB_KEY;
-  await fetch(SB_URL+'/rest/v1/book_ideas?id=eq.'+ideaId,{method:'PATCH',headers:{apikey:SB_KEY,Authorization:'Bearer '+token,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify({status:newStatus})});
+async function qAuth(table, params) {
+  var token = await getToken();
+  var res = await fetch(SB_URL + "/rest/v1/" + table + "?" + params, {
+    headers: { "apikey": SB_KEY, "Authorization": "Bearer " + token, "Content-Type": "application/json" }
+  });
+  return res.json();
 }
-
-const sc=s=>s>=75?'#34d399':s>=60?'#fbbf24':'#f87171';
-
-function statusBadge(s){
-  const m={pending:['badge-pending','Pendiente'],approved:['badge-approved','Aprobada'],writing:['badge-writing','Escribiendo'],published:['badge-published','Publicada'],discarded:['badge-discarded','Descartada']};
-  const[cls,lbl]=m[s]||['',s];
-  return '<span class="badge '+cls+'">'+lbl+'</span>';
+async function patchAuth(table, id, body) {
+  var token = await getToken();
+  return fetch(SB_URL + "/rest/v1/" + table + "?id=eq." + id, {
+    method: "PATCH",
+    headers: { "apikey": SB_KEY, "Authorization": "Bearer " + token, "Content-Type": "application/json", "Prefer": "return=minimal" },
+    body: JSON.stringify(body)
+  });
 }
-
-function statusSelect(id,cur){
-  const opts=[['pending','Pendiente'],['approved','Aprobada'],['writing','Escribiendo'],['published','Publicada'],['discarded','Descartada']];
-  return '<select onchange="updateStatus(''+id+'',this.value);location.reload()">'+opts.map(([v,l])=>'<option value="'+v+'" '+(v===cur?'selected':'')+'>'+l+'</option>').join('')+'</select>';
+function scoreClass(n) { return n >= 80 ? "score-high" : n >= 60 ? "score-mid" : "score-low"; }
+function buildStatusSelect(ideaId, current) {
+  var sel = document.createElement("select");
+  sel.className = "status-select";
+  [{value:"pending",label:"💡 Pendiente"},{value:"approved",label:"✅ Aprobada"},{value:"writing",label:"✍️ Escribiendo"},{value:"published",label:"📕 Publicada"},{value:"discarded",label:"🗑️ Descartada"}].forEach(function(o) {
+    var opt = document.createElement("option"); opt.value = o.value; opt.textContent = o.label;
+    if (o.value === current) opt.selected = true; sel.appendChild(opt);
+  });
+  sel.addEventListener("change", function(e) { e.stopPropagation(); updateStatus(ideaId, sel.value); });
+  return sel;
 }
-
-async function loadDashboard(){
-  const analyses=await qAuth('daily_analysis','?order=analysis_date.desc&limit=1');
-  const today=new Date().toISOString().split('T')[0];
-  if(!analyses.length){
-    document.getElementById('last-analysis').textContent='Sin analisis todavia';
-    document.getElementById('status-badge').textContent='Sin datos';
-    document.getElementById('kpis').innerHTML='<div class="empty-state">No hay datos aun. El sistema corre lunes, miercoles y viernes a las 6 AM.</div>';
-    document.getElementById('ideas-container').innerHTML='<div class="empty-state"></div>';
-    document.getElementById('niches-table').innerHTML='<tr><td colspan="6" class="empty-state">Sin datos</td></tr>';
-    document.getElementById('history-table').innerHTML='<tr><td colspan="6" class="empty-state">Sin datos</td></tr>';
-    document.getElementById('nichesChart').parentElement.innerHTML='<div class="empty-state">El grafico aparecera con datos historicos.</div>';
-    return;
-  }
-  const last=analyses[0],isToday=last.analysis_date===today;
-  document.getElementById('last-analysis').textContent='Ultimo analisis: '+last.analysis_date+' - '+(last.books_scanned||0)+' libros escaneados';
-  const b=document.getElementById('status-badge');
-  b.textContent=isToday?'Actualizado hoy':last.analysis_date;
-  b.className='status-badge '+(isToday?'status-ok':'status-waiting');
-
-  const[allIdeas,allNiches]=await Promise.all([qAuth('book_ideas','?order=created_at.desc'),qAuth('niches','?order=score.desc')]);
-  const todayIdeas=allIdeas.filter(i=>i.created_at?.startsWith(today));
-  const pendingIdeas=allIdeas.filter(i=>i.status==='pending');
-
-  document.getElementById('kpis').innerHTML=[
-    [todayIdeas.length,'Ideas generadas hoy'],
-    [pendingIdeas.length,'Pendientes de evaluar'],
-    [allNiches.filter(n=>n.score>=65).length,'Nichos score >= 65'],
-    [(last.execution_time_minutes||'?')+' min','Duracion analisis']
-  ].map(([v,l])=>'<div class="card"><div class="kpi-value">'+v+'</div><div class="kpi-label">'+l+'</div></div>').join('');
-
-  const ic=document.getElementById('ideas-container');
-  if(!todayIdeas.length){ic.innerHTML='<div class="empty-state">No se generaron ideas hoy.</div>';}
-  else{
-    ic.innerHTML=todayIdeas.map(idea=>'<div class="idea-card" onclick="this.classList.toggle('expanded')"><div style="display:flex;justify-content:space-between;align-items:flex-start"><div style="flex:1"><div style="font-size:1.1rem;font-weight:600;color:#f8fafc;margin-bottom:4px">'+idea.title_suggestion+'</div><div style="color:#94a3b8;font-size:0.9rem;margin-bottom:10px">'+(idea.subtitle_suggestion||'')+'</div><span class="badge badge-pseudo">'+( idea.pseudonym_assigned||'Sin asignar')+'</span><span class="badge badge-score">Score '+idea.score+'/100</span>'+statusBadge(idea.status)+'</div></div><div class="score-bar"><div class="score-fill" style="width:'+idea.score+'%;background:'+sc(idea.score)+'"></div></div><div class="brief-full"><div class="detail-grid"><div class="detail-item"><label>Premisa</label><p>'+(idea.main_promise||'--')+'</p></div><div class="detail-item"><label>Lector objetivo</label><p>'+(idea.target_reader||'--')+'</p></div><div class="detail-item"><label>Diferenciador</label><p>'+(idea.differentiator||'--')+'</p></div><div class="detail-item"><label>Gap detectado</label><p>'+(idea.gap_detected||'--')+'</p></div><div class="detail-item"><label>Formato - Extension</label><p>'+(idea.format||'--')+' - '+(idea.estimated_length||'--')+'</p></div><div class="detail-item"><label>Keywords Amazon</label><p>'+((idea.amazon_keywords||[]).join(', ')||'--')+'</p></div></div>'+(idea.chapter_structure?'<div style="margin-bottom:20px"><label style="color:#64748b;font-size:0.75rem;text-transform:uppercase;display:block;margin-bottom:8px">Estructura</label><ul class="chapter-list">'+idea.chapter_structure.map(c=>'<li><span class="ch-num">'+c.number+'.</span>'+c.title+(c.description?' - <span style="color:#64748b">'+c.description+'</span>':'')+'</li>').join('')+'</ul></div>':'')+'<div style="display:flex;align-items:center;gap:10px;padding-top:4px"><span style="color:#64748b;font-size:0.85rem">Estado:</span>'+statusSelect(idea.id,idea.status)+'</div></div></div>').join('');
-  }
-
-  const topNiches=allNiches.filter(n=>n.score>=50);
-  document.getElementById('niches-table').innerHTML=topNiches.length?topNiches.map(n=>'<tr><td style="font-weight:500">'+n.name+'</td><td style="color:#94a3b8">'+(n.category||'--')+'</td><td><span style="color:'+sc(n.score)+';font-weight:600">'+n.score+'</span></td><td>'+(n.avg_bsr?.toLocaleString()||'--')+'</td><td style="color:#64748b;font-size:0.85rem">'+(n.first_detected||'--')+'</td><td>'+(n.is_gap_from_com?'Si':'--')+'</td></tr>').join(''):'<tr><td colspan="6" class="empty-state">Sin nichos con score >= 50</td></tr>';
-
-  const thirtyAgo=new Date(Date.now()-30*864e5).toISOString();
-  const recent=await qAuth('book_ideas','?created_at=gte.'+thirtyAgo+'&order=created_at.desc');
-  document.getElementById('history-table').innerHTML=recent.length?recent.map(i=>'<tr><td style="color:#64748b;font-size:0.85rem">'+(i.created_at?.split('T')[0])+'</td><td style="font-weight:500;max-width:260px">'+i.title_suggestion+'</td><td><span class="badge badge-pseudo">'+(i.pseudonym_assigned||'--')+'</span></td><td><span style="color:'+sc(i.score)+';font-weight:600">'+i.score+'</span></td><td>'+statusBadge(i.status)+'</td><td>'+statusSelect(i.id,i.status)+'</td></tr>').join(''):'<tr><td colspan="6" class="empty-state">Sin ideas en los ultimos 30 dias</td></tr>';
-
-  const top5=allNiches.slice(0,5);
-  const histData=await qAuth('niche_history','?order=recorded_date.asc&limit=200');
-  const labels=[...new Set(histData.map(h=>h.recorded_date))].slice(-4);
-  if(labels.length){
-    new Chart(document.getElementById('nichesChart'),{type:'line',data:{labels,datasets:top5.map((n,i)=>{const c=['#3b82f6','#8b5cf6','#34d399','#fbbf24','#f87171'][i];return{label:n.name,data:labels.map(d=>(histData.find(h=>h.niche_id===n.id&&h.recorded_date===d)||{}).score||null),borderColor:c,backgroundColor:c+'20',tension:0.3,fill:true,spanGaps:true};})},options:{plugins:{legend:{labels:{color:'#94a3b8'}}},scales:{x:{ticks:{color:'#64748b'},grid:{color:'#1e293b'}},y:{min:0,max:100,ticks:{color:'#64748b'},grid:{color:'#1e293b'}}}}});
-  } else {
-    document.getElementById('nichesChart').parentElement.innerHTML='<div class="empty-state">El grafico estara disponible con datos historicos.</div>';
-  }
+async function updateStatus(id, s) { await patchAuth("book_ideas", id, { status: s }); }
+async function loadDashboard() {
+  var [analisis, nichos, ideas] = await Promise.all([
+    qAuth("daily_analysis", "select=*&order=analysis_date.desc&limit=30"),
+    qAuth("niches", "select=*&order=score.desc&limit=50"),
+    qAuth("book_ideas", "select=*&order=score.desc&limit=100")
+  ]);
+  renderStats(analisis, nichos, ideas);
+  renderIdeas(ideas);
+  renderNichos(nichos);
+  renderHistorial(analisis);
+  renderChart(nichos);
+}
+function renderStats(a, n, i) {
+  document.getElementById("stat-analisis").textContent = Array.isArray(a) ? a.length : 0;
+  document.getElementById("stat-nichos").textContent = Array.isArray(n) ? n.length : 0;
+  document.getElementById("stat-ideas").textContent = Array.isArray(i) ? i.length : 0;
+  var l = 0; if (Array.isArray(a)) a.forEach(function(x) { l += (x.books_scanned || 0); });
+  document.getElementById("stat-libros").textContent = l;
+}
+function renderIdeas(ideas) {
+  var c = document.getElementById("ideas-container");
+  document.getElementById("badge-ideas").textContent = Array.isArray(ideas) ? ideas.length : 0;
+  c.innerHTML = "";
+  if (!Array.isArray(ideas) || !ideas.length) { c.innerHTML = "<div class='loading'>No hay ideas aún.</div>"; return; }
+  ideas.forEach(function(idea) {
+    var card = document.createElement("div"); card.className = "idea-card";
+    var t = document.createElement("div"); t.className = "card-title"; t.textContent = idea.title_suggestion || "Sin título"; card.appendChild(t);
+    if (idea.subtitle_suggestion) { var s = document.createElement("div"); s.className = "card-meta"; s.textContent = idea.subtitle_suggestion; card.appendChild(s); }
+    var sc = document.createElement("div"); sc.className = "card-scores";
+    var sb2 = document.createElement("span"); sb2.className = "score " + scoreClass(idea.score || 0); sb2.textContent = (idea.score || 0) + "/100"; sc.appendChild(sb2);
+    if (idea.pseudonym_assigned) { var ps = document.createElement("span"); ps.className = "score"; ps.style.background = "#1e3a5f"; ps.style.color = "#60a5fa"; ps.textContent = "✍️ " + idea.pseudonym_assigned; sc.appendChild(ps); }
+    var sw = document.createElement("span"); sw.appendChild(buildStatusSelect(idea.id, idea.status || "pending")); sc.appendChild(sw);
+    card.appendChild(sc);
+    var d = document.createElement("div"); d.className = "card-detail";
+    [["main_promise","Promesa"],["differentiator","Diferenciador"],["target_reader","Lector objetivo"],["gap_detected","Gap"]].forEach(function(kv) {
+      if (!idea[kv[0]]) return;
+      var p = document.createElement("p"); var b = document.createElement("strong"); b.textContent = kv[1] + ": "; p.appendChild(b); p.appendChild(document.createTextNode(idea[kv[0]])); d.appendChild(p);
+    });
+    if (Array.isArray(idea.amazon_keywords) && idea.amazon_keywords.length) {
+      var p = document.createElement("p"); var b = document.createElement("strong"); b.textContent = "Keywords: "; p.appendChild(b); p.appendChild(document.createTextNode(idea.amazon_keywords.join(", "))); d.appendChild(p);
+    }
+    card.appendChild(d);
+    card.addEventListener("click", function(e) { if (e.target.tagName === "SELECT" || e.target.tagName === "OPTION") return; card.classList.toggle("expanded"); });
+    c.appendChild(card);
+  });
+}
+function renderNichos(nichos) {
+  var tbody = document.getElementById("nichos-body");
+  document.getElementById("badge-nichos").textContent = Array.isArray(nichos) ? nichos.length : 0;
+  tbody.innerHTML = "";
+  if (!Array.isArray(nichos) || !nichos.length) { tbody.innerHTML = "<tr><td colspan='7' class='loading'>No hay nichos.</td></tr>"; return; }
+  nichos.forEach(function(n) {
+    var tr = document.createElement("tr");
+    function td(v) { var c = document.createElement("td"); if (v instanceof Node) c.appendChild(v); else c.textContent = v != null ? v : "—"; return c; }
+    tr.appendChild(td(n.name)); tr.appendChild(td(n.category));
+    var sb2 = document.createElement("span"); sb2.className = "score " + scoreClass(n.score || 0); sb2.textContent = (n.score || 0) + "/100"; tr.appendChild(td(sb2));
+    tr.appendChild(td(n.avg_bsr ? "#" + n.avg_bsr.toLocaleString() : "—"));
+    tr.appendChild(td(n.competitor_count != null ? n.competitor_count : "—"));
+    tr.appendChild(td(n.is_gap_from_com ? "✅ Sí" : "—"));
+    tr.appendChild(td(n.last_updated || "—"));
+    tbody.appendChild(tr);
+  });
+}
+function renderHistorial(analisis) {
+  var tbody = document.getElementById("historial-body");
+  document.getElementById("badge-historial").textContent = Array.isArray(analisis) ? analisis.length : 0;
+  tbody.innerHTML = "";
+  if (!Array.isArray(analisis) || !analisis.length) { tbody.innerHTML = "<tr><td colspan='7' class='loading'>No hay análisis.</td></tr>"; return; }
+  analisis.forEach(function(a) {
+    var tr = document.createElement("tr");
+    function td(v) { var c = document.createElement("td"); c.textContent = v != null ? v : "—"; return c; }
+    var cats = Array.isArray(a.categories_analyzed) ? a.categories_analyzed.join(", ") : (a.categories_analyzed || "—");
+    tr.appendChild(td(a.analysis_date)); tr.appendChild(td(cats)); tr.appendChild(td(a.books_scanned)); tr.appendChild(td(a.niches_found)); tr.appendChild(td(a.ideas_generated)); tr.appendChild(td(a.execution_time_minutes ? a.execution_time_minutes + " min" : "—")); tr.appendChild(td(a.notes));
+    tbody.appendChild(tr);
+  });
+}
+function renderChart(nichos) {
+  if (!Array.isArray(nichos) || !nichos.length) return;
+  var top = nichos.slice(0, 10);
+  if (scoreChart) scoreChart.destroy();
+  scoreChart = new Chart(document.getElementById("score-chart").getContext("2d"), {
+    type: "bar",
+    data: { labels: top.map(function(n) { return n.name.length > 30 ? n.name.slice(0,30)+"…" : n.name; }), datasets: [{ label: "Opportunity Score", data: top.map(function(n){return n.score||0;}), backgroundColor: top.map(function(n){return n.score>=80?"#4ade80":n.score>=60?"#fbbf24":"#f87171";}), borderRadius: 6 }] },
+    options: { responsive: true, plugins: { legend: { display: false } }, scales: { x: { ticks: { color: "#94a3b8", font: { size: 11 } }, grid: { color: "#1a1f2e" } }, y: { min: 0, max: 100, ticks: { color: "#94a3b8" }, grid: { color: "#2d3348" } } } }
+  });
 }
 </script>
 </body>
