@@ -98,6 +98,9 @@
     .filter-pill.active-written   { background: #312e81; border-color: #818cf8; color: #c7d2fe; }
     .filter-pill.active-published { background: #4a044e; border-color: #d946ef; color: #f0abfc; }
     .filter-pill.active-discarded { background: #1c1917; border-color: #78716c; color: #a8a29e; }
+    .filter-pill.empty { opacity: 0.35; cursor: default; }
+    .filter-pill.empty:hover { border-color: #2d3348; color: #94a3b8; }
+    .pill-count { display: inline-block; background: rgba(255,255,255,0.12); border-radius: 10px; padding: 0px 6px; font-size: 11px; margin-left: 4px; font-weight: 700; }
     .ideas-search {
       padding: 6px 12px; border-radius: 8px; border: 1px solid #2d3348;
       background: #0f1117; color: #e2e8f0; font-size: 13px; outline: none;
@@ -217,6 +220,27 @@ function updatePillStyles(){
   });
 }
 
+function updatePillCounts(){
+  // Contar por estado
+  var counts={all:allIdeas.length,pending:0,approved:0,writing:0,written:0,published:0,discarded:0};
+  allIdeas.forEach(function(idea){
+    var st=idea.status||"pending";
+    if(counts[st]!==undefined) counts[st]++;
+  });
+  var labels={
+    all:"Todas",pending:"💡 Pendiente",approved:"✅ Aprobada",
+    writing:"✍️ Escribiendo",written:"📝 Escrito",published:"📕 Publicada",discarded:"🗑️ Descartada"
+  };
+  document.querySelectorAll(".filter-pill").forEach(function(pill){
+    var f=pill.dataset.filter;
+    var n=counts[f]||0;
+    pill.innerHTML=labels[f]+'<span class="pill-count">'+n+'</span>';
+    // Atenuar si no hay elementos (excepto "Todas")
+    if(f!=="all"&&n===0) pill.classList.add("empty");
+    else pill.classList.remove("empty");
+  });
+}
+
 function applyFilters(){
   var filtered=allIdeas.filter(function(idea){
     // Filtro por estado
@@ -255,7 +279,8 @@ function buildStatusSelect(id,cur){
     var idea=allIdeas.find(function(i){return i.id===id;});
     if(idea) idea.status=s.value;
     patchAuth("book_ideas",id,{status:s.value});
-    // Re-aplicar filtros para que desaparezca si ya no corresponde al filtro activo
+    // Actualizar conteos y re-aplicar filtros
+    updatePillCounts();
     applyFilters();
   });
   return s;
@@ -271,6 +296,7 @@ async function loadDashboard(){
   allIdeas=Array.isArray(i)?i:[];
   document.getElementById("badge-ideas").textContent=allIdeas.length;
   renderStats(a,n,allIdeas,ex);
+  updatePillCounts();
   updatePillStyles();
   applyFilters();
   renderNichos(n);
